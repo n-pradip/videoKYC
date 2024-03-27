@@ -1,17 +1,12 @@
 from rest_framework import serializers
-from .models import User
+from kyc.models import KYC, AppointmentModel
 
-
-class UserSerializer(serializers.ModelSerializer):
+class KYCSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
-        fields = (
-            "id",
-            "email",
-            "full_name",
-            "profile_pic",
-            "branch_name",
-            "branch_code",
-            "department",
-            "functional_title",
-        )
+        model = KYC
+        fields = '__all__'
+
+class AppointmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AppointmentModel
+        fields = '__all__'

@@ -55,7 +55,6 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-
 class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(
         verbose_name='email address',
@@ -63,18 +62,10 @@ class User(AbstractBaseUser, PermissionsMixin):
         unique=True,
     )
     # Custom fields ------------------------------------------------
-    first_name = models.CharField(max_length=128,null=True,blank=True)
-    middle_name = models.CharField(max_length=128,null=True,blank=True)
-    last_name = models.CharField(max_length=128,null=True,blank=True)
-    phone_no = models.CharField(max_length=10,null=True,blank=True)
-    role = models.CharField(choices=USER_ROLES, max_length=121, default='Client',null=True,blank=True)
-    is_email_verified = models.BooleanField(default=False,null=True,blank=True)
-    gender = models.CharField(choices=GENDER_CHOICES,max_length=128, default='Male',null=True,blank=True)
-    is_user_verified = models.BooleanField(default=False,null=True,blank=True)
 
     # --------------------------------------------------------------
 
-    is_active = models.BooleanField(default=True,null=True,blank=True)
+    is_active = models.BooleanField(default=True,null=True,blank=True)  
     is_admin = models.BooleanField(default=False,null=True,blank=True)
     created_at = models.DateTimeField(auto_now_add=True,null=True,blank=True)
     updated_at = models.DateTimeField(auto_now=True,null=True,blank=True)
@@ -82,7 +73,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ["role","first_name","middle_name","last_name"]
+    REQUIRED_FIELDS = ["role"]
 
     def __str__(self):
         return self.email
@@ -103,19 +94,47 @@ class User(AbstractBaseUser, PermissionsMixin):
         # Simplest possible answer: All admins are staff
         return self.is_admin
 
-
 class UserTokens(models.Model):
     password_reset_token = models.CharField(max_length=255, null=True, blank=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
-
-class UserProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="farmer_profile")
-    bio = models.TextField(blank=True, null=True)
-    profile_picture = models.ImageField(upload_to='farmer_profile_picture/', blank=True, null=True)
-    address = models.CharField(max_length=255, blank=True, null=True)
-    birthdate = models.DateField(blank=True, null=True)
-    
+class AddressModel(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    state = models.CharField(max_length=255, blank=True, null=True)
+    district = models.CharField(max_length=255, blank=True, null=True)
+    house_no = models.CharField(max_length=255, blank=True, null=True)
 
     def __str__(self):
-        return self.user.username
+        return self.state
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="user")
+    bio = models.TextField(blank=True, null=True)
+    profile_picture = models.ImageField(upload_to='user_profile_pictures', blank=True, null=True)
+    permanent_address = models.ForeignKey(AddressModel,on_delete=models.CASCADE, blank=True, null=True, related_name="user_permanent_address")
+    temporary_address = models.ForeignKey(AddressModel, on_delete=models.CASCADE, blank=True, null=True, related_name="user_temporary_address")
+    birthdate = models.DateField(blank=True, null=True)
+    gender = models.CharField(choices=GENDER_CHOICES,max_length=128, default='Male',null=True,blank=True)
+    fathers_name = models.CharField(max_length=255, blank=True, null=True)
+    mothers_name = models.CharField(max_length=255, blank=True, null=True)
+    grandfathers_name = models.CharField(max_length=255, blank=True, null=True)
+    spouse_name = models.CharField(max_length=255, blank=True, null=True)
+    role = models.CharField(choices=USER_ROLES, max_length=121, default='Client',null=True,blank=True)
+    is_email_verified = models.BooleanField(default=False,null=True,blank=True)
+    is_user_verified = models.BooleanField(default=False,null=True,blank=True)
+
+    def __str__(self):
+        return self.user.email
+    
+class InitialRegistration(models.Model):
+    first_name = models.CharField(max_length=128,null=True,blank=True)
+    middle_name = models.CharField(max_length=128,null=True,blank=True)
+    last_name = models.CharField(max_length=128,null=True,blank=True)
+    phone_no = models.CharField(max_length=10,null=True,blank=True)
+    email = models.EmailField(max_length=255,null=True,blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return self.email    
+    
+

@@ -5,12 +5,15 @@ from django.core.exceptions import ValidationError
 
 class AppointmentModel(models.Model):
     """
-    Appointment can be taken more than 5 times the user itself and get scheduled.If so user must be deprived of using this feature and only admin can make the appointment for the user
+    Appointment can be taken more than 5 times the user itself and get scheduled.If so user must be deprived of using this feature and only admin(checker) can make the appointment for the user
     """
     appointment_date = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE,null=True, blank=True)
     is_scheduled = models.BooleanField(default=False,null=True, blank=True)
     appointment_count = models.PositiveIntegerField()
+    booked_country = models.CharField(max_length=200, default="Nepal", null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True,null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now_add=True,null=True, blank=True)
     class Meta:
         verbose_name = 'Appointment'
         verbose_name_plural = "Appointments"
@@ -55,17 +58,16 @@ class KYC(models.Model):
     applicant_name = models.CharField(max_length=300)
     kyc_type = models.CharField(choices=kyc_type_choices, max_length=10)
     email = models.EmailField()
-    booked_country = models.CharField(max_length=200, default="Nepal", null=True, blank=True)
     status = models.CharField(choices=status_choices, default="appointment_taken", max_length=20)
     
-    online_appointment = models.ManyToManyField(AppointmentModel, on_delete=models.CASCADE,null=True,blank=True)
+    online_appointment = models.ManyToManyField(AppointmentModel,blank=True)
     scheduled_date = models.DateTimeField(null=True,blank=True)
-    scheduled_remarks = models.TextField(null=True,blank=True) # if EMPLOYEE changed the appointment date then scheduled remarks must be provided 
+    scheduled_remarks = models.TextField(null=True,blank=True) # if EMPLOYEE(checker) change appointment date then scheduled remarks must be provided 
     scheduled_at = models.DateTimeField(null=True, blank=True)
     scheduled_by = models.ForeignKey(User, related_name='scheduled_by', on_delete=models.SET_NULL, null=True)
 
+    reschedule_count = models.PositiveIntegerField()
     is_rebooked = models.BooleanField(default=False)
-
 
     reverted_count = models.PositiveIntegerField(default=0)
     
@@ -83,13 +85,13 @@ class KYC(models.Model):
     verified_by = models.ForeignKey(User, related_name='verified_by', on_delete=models.SET_NULL, null=True)
     updated_at = models.DateTimeField(auto_now=True)
     
-    is_online_to_live_converted = models.BooleanField(default=False)
-    online_to_live_conversion_reason = models.TextField(null=True,blank=True)
-    online_to_live_conversion_date = models.DateTimeField(null=True, blank=True)
+    is_recorded_to_live_converted = models.BooleanField(default=False)
+    recorded_to_live_conversion_reason = models.TextField(null=True,blank=True)
+    recorded_to_live_conversion_date = models.DateTimeField(null=True, blank=True)
     
-    is_live_to_online_converted = models.BooleanField(default=False)
-    live_to_online_conversion_date = models.DateTimeField(null=True, blank=True)
-    live_to_online_conversion_reason = models.TextField(null=True,blank=True)
+    is_live_to_recorded_converted = models.BooleanField(default=False)
+    live_to_recorded_conversion_date = models.DateTimeField(null=True, blank=True)
+    live_to_recorded_conversion_reason = models.TextField(null=True,blank=True)
 
     class Meta:
         ordering = ['-id']
