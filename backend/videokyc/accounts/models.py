@@ -2,53 +2,41 @@ from django.db import models
 from utility.choices import USER_ROLES, GENDER_CHOICES
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser,PermissionsMixin
 
+class InitialRegistration(models.Model):
+    first_name = models.CharField(max_length=128,null=True,blank=True)
+    middle_name = models.CharField(max_length=128,null=True,blank=True)
+    last_name = models.CharField(max_length=128,null=True,blank=True)
+    phone_no = models.CharField(max_length=10,null=True,blank=True,unique=True)
+    email = models.EmailField(max_length=255,null=True,blank=True, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return self.email    
+    
 class UserManager(BaseUserManager):
-    def create_user(self, email, first_name, last_name,middle_name, phone_no, role, gender, password=None, password2=None):
+    def create_user(self, email, password=None, password2=None):
         """
-        Creates and saves a User with the given email, phone_no, role, gender and password.
+        Creates and saves a User with the given email, password.
         """
         if not email:
             raise ValueError('Users must have an email address')
-        if not first_name:
-            raise ValueError('Users must provide a first name')
-        if not middle_name:
-            raise ValueError('Users must provide a middle name')
-        if not last_name:
-            raise ValueError('Users must provide a last name')
-        if not role:
-            raise ValueError('Users must assign a role for creating user.')
-        if not gender:
-            raise ValueError('Users must assign a gender for creating user.')
-        
         
 
         user = self.model(
             email=self.normalize_email(email),
-            first_name=first_name,
-            last_name = last_name,
-            phone_no=phone_no,
-            role=role,
-            gender=gender
         )
 
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email, role, first_name, middle_name, last_name, password=None):
+    def create_superuser(self, email, password=None):
         """
-        Creates and saves a superuser with the given first_name, middle_name, last_name,
-        email, role, phone_no.
+        Creates and saves a superuser with the given email and password
         """
         user = self.create_user(
-            email=email,
-            first_name=first_name,
-            last_name=last_name,
-            middle_name=middle_name,
-            phone_no="",  #  superuser doesn't require phone_no
-            role='admin', #superuser will have by default the role of admin
-            password=password,
-            gender='Male'
+            email=email
         )
 
         user.is_admin = True
@@ -62,7 +50,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         unique=True,
     )
     # Custom fields ------------------------------------------------
-
+    initial_registration_attributes = models.ForeignKey(InitialRegistration, on_delete=models.CASCADE, null=True, blank=True)
     # --------------------------------------------------------------
 
     is_active = models.BooleanField(default=True,null=True,blank=True)  
@@ -73,7 +61,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ["role"]
+    # REQUIRED_FIELDS = []
 
     def __str__(self):
         return self.email
@@ -124,17 +112,5 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return self.user.email
-    
-class InitialRegistration(models.Model):
-    first_name = models.CharField(max_length=128,null=True,blank=True)
-    middle_name = models.CharField(max_length=128,null=True,blank=True)
-    last_name = models.CharField(max_length=128,null=True,blank=True)
-    phone_no = models.CharField(max_length=10,null=True,blank=True)
-    email = models.EmailField(max_length=255,null=True,blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now_add=True)
-    
-    def __str__(self):
-        return self.email    
     
 

@@ -12,6 +12,7 @@ ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="127.0.0.1,localhost", cast=Csv(
 
 
 DEFAULT_APPS = [
+    "corsheaders",
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -22,7 +23,6 @@ DEFAULT_APPS = [
 ]
 THIRD_PARTY_APPS = [
     'rest_framework',
-    "corsheaders",
 
 ]   
 CUSTOM_APPS = [
@@ -139,3 +139,8 @@ REST_FRAMEWORK = {
 }
 
 COMPANY_NAME = config("COMPANY_NAME")
+
+# CORS_ALLOWED_ORIGINS = [
+#     'http://localhost:3000',
+# ]
+CORS_ALLOW_ALL_ORIGINS = True
