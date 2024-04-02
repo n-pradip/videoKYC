@@ -1,3 +1,4 @@
+import random
 from rest_framework import viewsets
 from .serializers import InitialRegistrationSerializer, UserSignupSerializer, LoginSerializer, OTPVerificationSerializer,SetPasswordSerializer, AddressSerializer, UserSerializer
 from .models import User, InitialRegistration, OTPVerification, AddressModel
@@ -106,11 +107,50 @@ class LoginViewSet(viewsets.ModelViewSet):
             return Response(tokens, status=status.HTTP_200_OK)
         return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
+def generate_otp_code(num):
+    # Generate each digit of the OTP separately and concatenate them
+    otp_code = ''.join(str(random.randint(0, 9)) for _ in range(num))    
+    return otp_code
 
 class OTPVerificationViewSet(viewsets.ModelViewSet):
     queryset = OTPVerification.objects.all()
     serializer_class = OTPVerificationSerializer
 
-    # @action()
-    def generate_otp():
-        import random
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    
+    @action(detail=False, methods=['post'], url_path='verify-otp')
+    def otp_verify(self, request, *args, **kwargs):
+        generated_otp_code = request.session.get('generated_otp_code')
+        if not generated_otp_code:
+            return Response({"error": "OTP not generated. Please send OTP first."}, status=400)
+
+        user_id = request.data.get('user_id')
+        user_provided_otp_code = request.data.get('otp_code')
+
+        if not user_id or not user_provided_otp_code:
+            return Response({"error": "User ID and OTP code are required"}, status=400)
+
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return Response({"error": "User does not exist"}, status=400)
+
+        if generated_otp_code == user_provided_otp_code:
+            user.is_otp_verified = True
+            user.save()
+            return Response({"message": "OTP verified successfully"})
+        else:
+            return Response({"error": "Invalid OTP code"}, status=400)
+        
+
+
+    
+
+
+    
