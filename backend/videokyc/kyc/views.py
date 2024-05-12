@@ -9,3 +9,5 @@ class AppointmentViewSet(viewsets.ModelViewSet):
 class KYCViewSet(viewsets.ModelViewSet):
     queryset = KYC.objects.all()
     serializer_class = KYCSerializer
+
+

@@ -35,10 +35,11 @@ class InitialRegistration(models.Model):
     email = models.EmailField(max_length=255,null=True,blank=True, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
+    is_otp_verified = models.BooleanField(default=False, null=True, blank=True)
     
     def __str__(self):
         return self.email   
-    
+
 class UserManager(BaseUserManager):
     def create_user(self, email,password=None, password2=None):
         """
@@ -122,14 +123,3 @@ class User(AbstractBaseUser, PermissionsMixin):
         "Is the user a member of staff?"
         # Simplest possible answer: All admins are staff
         return self.is_admin
-
-class OTPVerification(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    otp_code = models.PositiveIntegerField()
-    purpose = models.CharField(max_length=128)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now_add=True)
-    is_used = models.BooleanField(default=False)
-
-    def __str__(self):
-        return f"{self.user} > {self.otp_code}"

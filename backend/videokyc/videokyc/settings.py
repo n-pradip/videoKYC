@@ -1,6 +1,8 @@
 import os
 from pathlib import Path
 from decouple import config,Csv
+from pymongo import MongoClient
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -77,6 +79,13 @@ DATABASES = {
 }
 
 
+CLIENT = MongoClient(host='localhost',
+                     port=int(27017),
+                     )
+MONGO_DB = CLIENT['VKYC']
+INITIAL_REGISTRATION_OTP_DB_COLLECTION = MONGO_DB['initial_registration_otp']
+
+
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
 
@@ -143,3 +152,11 @@ COMPANY_NAME = config("COMPANY_NAME")
 #     'http://localhost:3000',
 # ]
 CORS_ALLOW_ALL_ORIGINS = True
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = config('EMAIL_HOST')
+EMAIL_PORT = config('EMAIL_PORT')
+EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
+EMAIL_USE_TLS = True

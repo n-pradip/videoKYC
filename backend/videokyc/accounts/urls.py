@@ -14,5 +14,6 @@ router.register(r'all-users', UserViewSet, basename='get_all_user')
 
 urlpatterns = [
     path('',include(router.urls)),
+    # path('', )
 
 ]
